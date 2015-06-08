@@ -1,0 +1,50 @@
+{
+    "appKeys": {},
+    "capabilities": [
+        "configurable"
+    ],
+    "companyName": "WA1OUI",
+    "longName": "RICE",
+    "projectType": "native",
+    "resources": {
+        "media": [
+            {
+                "file": "fonts/HelveNeuLig.ttf",
+                "name": "FONT_HELV_NEW_LIGHT_20",
+                "type": "font"
+            },
+            {
+                "characterRegex": "[:0-9]",
+                "file": "fonts/Roboto-Bold.ttf",
+                "name": "FONT_ROBOTO_BOLD_SUBSET_45",
+                "type": "font"
+            },
+            {
+                "file": "images/Rice.png",
+                "name": "IMAGE_RICE_LOGO",
+                "type": "png"
+            },
+            {
+                "file": "images/RiceBW.png",
+                "name": "IMAGE_RICE_LOGO_BW",
+                "type": "png"
+            },
+            {
+                "file": "images/menu_icon_UCONN_BW copy.png",
+                "name": "IMAGE_MENU_ICON",
+                "type": "png"
+            }
+        ]
+    },
+    "sdkVersion": "3",
+    "shortName": "RICE",
+    "targetPlatforms": [
+        "aplite",
+        "basalt"
+    ],
+    "uuid": "3af486cd-da7c-4f29-8488-f2eda112e7b7",
+    "versionLabel": "4.00",
+    "watchapp": {
+        "watchface": true
+    }
+}
