@@ -1,6 +1,7 @@
 #include "pebble.h"
 
-#define DATE_STYLE 0
+#define PERSONALIZED_TEXT_INPUT 0
+#define DATE_STYLE 1
 
 Window *window;
 
@@ -35,8 +36,8 @@ static char date_type[]="us  ";
 static char dayname_text[] = "XXXXXXXXXX";
 static char time_text[] = "00:00";
 static char date_text[] = "Xxx 00       0000";
+static char seconds_text[] = "00";
 static char date_format[]="%b %e, %Y";
-
 
 GColor TextColorHold;
 GColor BGColorHold;
@@ -262,53 +263,53 @@ void handle_appfocus(bool in_focus){
 }
 
 void handle_tick(struct tm *tick_time, TimeUnits units_changed) {
+  char time_format[] = "%I:%M";
 
-  if(SecsInt == 0) {
-  char *time_format;
+  strftime(seconds_text, sizeof(seconds_text), "%S", tick_time);
 
   if (clock_is_24h_style()) {
-    time_format = "%R";
+    strcpy(time_format,"%R");
   } else {
-    time_format = "%I:%M";
+    strcpy(time_format,"%I:%M");
   }
 
-  //handle_battery(battery_state_service_peek());
-
-  //handle_bluetooth(bluetooth_connection_service_peek());
-
-  // Set Time of Day
   strftime(time_text, sizeof(time_text), time_format, tick_time);
 
-  // Kludge to handle lack of non-padded hour format string
-  // for twelve hour clock.
-  if (!clock_is_24h_style() && (time_text[0] == '0')) {
-    memmove(time_text, &time_text[1], sizeof(time_text) - 1);
-  }
+  if((strcmp(seconds_text,"00") == 0) || (FirstTime == 0)) {
+     FirstTime = 1;
 
-  // Set day and date
-  strftime(dayname_text, sizeof(dayname_text), "%A",        tick_time);
-  strftime(date_text,    sizeof(date_text), date_format, tick_time);
+     // Set Time of Day
+     strftime(time_text, sizeof(time_text), time_format, tick_time);
 
- //Initialize
-if (FirstTime == 0) {
-    text_layer_set_text(text_dayname_layer, dayname_text);
-    text_layer_set_text(text_date_layer, date_text);
-    FirstTime = 1;
-    }
+     // Kludge to handle lack of non-padded hour format string
+     // for twelve hour clock.
+     if (!clock_is_24h_style() && (time_text[0] == '0')) {
+        memmove(time_text, &time_text[1], sizeof(time_text) - 1);
+     }
 
-if (units_changed & DAY_UNIT) {
-   // Only update the day name & date when it's changed.
-    text_layer_set_text(text_dayname_layer, dayname_text);
-    text_layer_set_text(text_date_layer, date_text);
-  }
-  //Always set time
-  text_layer_set_text(text_time_layer, time_text);
+     // Set day and date
+     strftime(dayname_text, sizeof(dayname_text), "%A", tick_time);
+     strftime(date_text,    sizeof(date_text), date_format, tick_time);
+
+     text_layer_set_text(text_dayname_layer, dayname_text);
+     text_layer_set_text(text_date_layer, date_text);
+
+     if (units_changed & DAY_UNIT) {
+        // Only update the day name & date when it's changed.
+        text_layer_set_text(text_dayname_layer, dayname_text);
+        text_layer_set_text(text_date_layer, date_text);
+     }
+
+     //Always set time
+     text_layer_set_text(text_time_layer, time_text);
   }
 }
 
 //Receive Input from Config html page:
 static void inbox_received_callback(DictionaryIterator *iterator, void *context) {
   APP_LOG(APP_LOG_LEVEL_INFO, "In Inbox received callback");
+
+  FirstTime = 0;
 
   // Read first item
   Tuple *t = dict_read_first(iterator);
@@ -318,7 +319,6 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
 
     // Which key was received?
     switch(t->key) {
-
     case 0:
       strcpy(date_type, t->value->cstring);
 
@@ -354,8 +354,10 @@ static void outbox_sent_callback(DictionaryIterator *iterator, void *context) {
 }
 
 void handle_deinit(void) {
-  persist_write_string(DATE_STYLE, date_type);
   tick_timer_service_unsubscribe();
+
+  persist_write_string(DATE_STYLE, date_type);
+
   battery_state_service_unsubscribe();
   bluetooth_connection_service_unsubscribe();
   app_focus_service_unsubscribe();
@@ -413,12 +415,17 @@ void handle_init(void) {
   //Persistent Value Date Format:
   if (persist_exists(DATE_STYLE)) {
      persist_read_string(DATE_STYLE, date_type, sizeof(date_type));
-     APP_LOG(APP_LOG_LEVEL_WARNING, "persistent exists");
-     APP_LOG(APP_LOG_LEVEL_WARNING, date_type);
   }  else {
      strcpy(date_type, "us");
-  }// Time of Day
+  }
 
+  if (strcmp(date_type, "us") == 0) {
+      strcpy(date_format, "%b %e, %Y");
+  } else {
+      strcpy(date_format, "%e %b %Y");
+  }
+
+  // Time of Day
   text_time_layer = text_layer_create(GRect(1, 120, 144, 45));
   text_layer_set_text_color(text_time_layer, TEXTCOLOR);
   text_layer_set_background_color(text_time_layer, BGCOLOR);
