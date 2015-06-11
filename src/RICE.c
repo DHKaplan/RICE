@@ -153,6 +153,10 @@ void BTLine_update_callback(Layer *BTLayer1, GContext* BT1ctx) {
             graphics_context_set_stroke_color(BT1ctx, GColorRed);
             graphics_context_set_fill_color(BT1ctx, GColorWhite);
             graphics_fill_rect(BT1ctx, layer_get_bounds(BTLayer1), 0, GCornerNone);
+        #else
+            graphics_context_set_stroke_color(BT1ctx, GColorBlack);
+            graphics_context_set_fill_color(BT1ctx, GColorWhite);
+            graphics_fill_rect(BT1ctx, layer_get_bounds(BTLayer1), 0, GCornerNone);
         #endif
 
         // "X"" Line 1
@@ -299,10 +303,10 @@ void handle_tick(struct tm *tick_time, TimeUnits units_changed) {
         text_layer_set_text(text_dayname_layer, dayname_text);
         text_layer_set_text(text_date_layer, date_text);
      }
-
+  }
      //Always set time
      text_layer_set_text(text_time_layer, time_text);
-  }
+  
 }
 
 //Receive Input from Config html page:
