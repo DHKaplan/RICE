@@ -9,6 +9,11 @@
     "resources": {
         "media": [
             {
+                "file": "images/Rice Menu BW.png",
+                "name": "IMAGE_MENU_ICON",
+                "type": "png"
+            },
+            {
                 "file": "fonts/HelveNeuLig.ttf",
                 "name": "FONT_HELV_NEW_LIGHT_20",
                 "type": "font"
@@ -27,11 +32,6 @@
             {
                 "file": "images/RiceBW.png",
                 "name": "IMAGE_RICE_LOGO_BW",
-                "type": "png"
-            },
-            {
-                "file": "images/menu_icon_UCONN_BW copy.png",
-                "name": "IMAGE_MENU_ICON",
                 "type": "png"
             }
         ]
