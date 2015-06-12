@@ -29,7 +29,6 @@ static int BatteryVibesDone = 0;
 static int batterycharging = 0;
 
 static int FirstTime = 0;
-static int SecsInt = 0;
 
 static char date_type[]="us  ";
 static char dayname_text[] = "XXXXXXXXXX";
@@ -117,7 +116,6 @@ void line_layer_update_callback(Layer *LineLayer, GContext* ctx) {
        graphics_fill_rect(ctx, GRect(2, 1, batterychargepct, 4), 3, GCornersAll);
      }
 }
-
 
 void handle_bluetooth(bool connected) {
 
@@ -258,7 +256,6 @@ void BTLine_update_callback(Layer *BTLayer1, GContext* BT1ctx) {
       }
 }
 
-
 void handle_appfocus(bool in_focus){
     if (in_focus) {
         handle_bluetooth(bluetooth_connection_service_peek());
@@ -278,34 +275,28 @@ void handle_tick(struct tm *tick_time, TimeUnits units_changed) {
 
   strftime(time_text, sizeof(time_text), time_format, tick_time);
 
+  // Kludge to handle lack of non-padded hour format string
+  // for twelve hour clock.
+  if (!clock_is_24h_style() && (time_text[0] == '0')) {
+    memmove(time_text, &time_text[1], sizeof(time_text) - 1);
+  }
+  
   if((strcmp(seconds_text,"00") == 0) || (FirstTime == 0)) {
-     FirstTime = 1;
-
-     // Set Time of Day
-     strftime(time_text, sizeof(time_text), time_format, tick_time);
-
-     // Kludge to handle lack of non-padded hour format string
-     // for twelve hour clock.
-     if (!clock_is_24h_style() && (time_text[0] == '0')) {
-        memmove(time_text, &time_text[1], sizeof(time_text) - 1);
-     }
-
-     // Set day and date
      strftime(dayname_text, sizeof(dayname_text), "%A", tick_time);
      strftime(date_text,    sizeof(date_text), date_format, tick_time);
 
      text_layer_set_text(text_dayname_layer, dayname_text);
      text_layer_set_text(text_date_layer, date_text);
-
+  }
      if (units_changed & DAY_UNIT) {
         // Only update the day name & date when it's changed.
         text_layer_set_text(text_dayname_layer, dayname_text);
         text_layer_set_text(text_date_layer, date_text);
      }
-  }
+  
      //Always set time
      text_layer_set_text(text_time_layer, time_text);
-  
+     FirstTime = 1; 
 }
 
 //Receive Input from Config html page:
