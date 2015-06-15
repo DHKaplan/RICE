@@ -1,6 +1,7 @@
 #include "pebble.h"
 
 #define DATE_STYLE 0
+#define BT_VIBRATE 1  
 
 Window *window;
 
@@ -14,7 +15,7 @@ static GBitmap     *image;
 static BitmapLayer *image_layer;
 
 Layer *line_layer;
-Layer       *BTLayer1;
+Layer       *BTLayer;
 
 GFont        fontHelvNewLight20;
 GFont		     fontRobotoCondensed21;
@@ -23,6 +24,8 @@ GFont        fontRobotoBoldSubset45;
 GPoint     Linepoint;
 static int BTConnected = 1;
 static int BTVibesDone = 0;
+static char VibOnBTLoss[] = "0"; //From Config Page
+
 
 static int batterychargepct;
 static int BatteryVibesDone = 0;
@@ -118,26 +121,23 @@ void line_layer_update_callback(Layer *LineLayer, GContext* ctx) {
 }
 
 void handle_bluetooth(bool connected) {
-
-    if (connected) {
-
+      if (connected) {
          BTConnected = 1;     // Connected
          BTVibesDone = 0;
 
     } else {
          BTConnected = 0;      // Not Connected
 
-         if (BTVibesDone == 0) {    //Do First Vibe
+         if ((BTVibesDone == 0) && (strcmp(VibOnBTLoss,"0") == 0)) {    
              BTVibesDone = 1;
-
              vibes_long_pulse();
          }
     }
-    layer_mark_dirty(BTLayer1);
+    layer_mark_dirty(BTLayer);
 }
 
 //BT Logo Callback;
-void BTLine_update_callback(Layer *BTLayer1, GContext* BT1ctx) {
+void BTLine_update_callback(Layer *BTLayer, GContext* BT1ctx) {
 
        GPoint BTLinePointStart;
        GPoint BTLinePointEnd;
@@ -149,11 +149,11 @@ void BTLine_update_callback(Layer *BTLayer1, GContext* BT1ctx) {
         #ifdef PBL_COLOR
             graphics_context_set_stroke_color(BT1ctx, GColorRed);
             graphics_context_set_fill_color(BT1ctx, GColorWhite);
-            graphics_fill_rect(BT1ctx, layer_get_bounds(BTLayer1), 0, GCornerNone);
+            graphics_fill_rect(BT1ctx, layer_get_bounds(BTLayer), 0, GCornerNone);
         #else
             graphics_context_set_stroke_color(BT1ctx, GColorBlack);
             graphics_context_set_fill_color(BT1ctx, GColorWhite);
-            graphics_fill_rect(BT1ctx, layer_get_bounds(BTLayer1), 0, GCornerNone);
+            graphics_fill_rect(BT1ctx, layer_get_bounds(BTLayer), 0, GCornerNone);
         #endif
 
         // "X"" Line 1
@@ -301,6 +301,8 @@ void handle_tick(struct tm *tick_time, TimeUnits units_changed) {
 
 //Receive Input from Config html page:
 static void inbox_received_callback(DictionaryIterator *iterator, void *context) {
+  char BTVibeConfig[] = "0";
+  
   APP_LOG(APP_LOG_LEVEL_INFO, "In Inbox received callback");
 
   FirstTime = 0;
@@ -322,7 +324,15 @@ static void inbox_received_callback(DictionaryIterator *iterator, void *context)
          strcpy(date_format, "%e %b %Y");
       }
       text_layer_set_text(text_date_layer, date_text);
-      text_layer_set_text(text_date_layer, date_text);
+      break;
+      
+    case 1:
+      strcpy(BTVibeConfig, t->value->cstring); 
+      if (strcmp(BTVibeConfig, "0") == 0) {
+         strcpy(VibOnBTLoss,"0");
+      } else {
+         strcpy(VibOnBTLoss,"1");
+      }
       break;
 
     default:
@@ -351,6 +361,7 @@ void handle_deinit(void) {
   tick_timer_service_unsubscribe();
 
   persist_write_string(DATE_STYLE, date_type);
+  persist_write_string(BT_VIBRATE, VibOnBTLoss);
 
   battery_state_service_unsubscribe();
   bluetooth_connection_service_unsubscribe();
@@ -362,7 +373,7 @@ void handle_deinit(void) {
   text_layer_destroy(text_battery_layer);
 
   layer_destroy(line_layer);
-  layer_destroy(BTLayer1);
+  layer_destroy(BTLayer);
 
   gbitmap_destroy(image);
   bitmap_layer_destroy(image_layer);
@@ -418,7 +429,14 @@ void handle_init(void) {
   } else {
       strcpy(date_format, "%e %b %Y");
   }
-
+  
+  //Persistent Value VibOnBTLoss
+  if(persist_exists(BT_VIBRATE)) {
+     persist_read_string(BT_VIBRATE, VibOnBTLoss, sizeof(VibOnBTLoss));  
+  }  else {
+     strcpy(VibOnBTLoss, "0"); // Default
+  } 
+  
   // Time of Day
   text_time_layer = text_layer_create(GRect(1, 120, 144, 45));
   text_layer_set_text_color(text_time_layer, TEXTCOLOR);
@@ -457,11 +475,11 @@ void handle_init(void) {
 
   //Bluetooth Logo Setup area
   GRect BTArea = GRect(1, 5, 20, 20);
-  BTLayer1 = layer_create(BTArea);
+  BTLayer = layer_create(BTArea);
 
-  layer_add_child(window_layer, BTLayer1);
+  layer_add_child(window_layer, BTLayer);
 
-  layer_set_update_proc(BTLayer1, BTLine_update_callback);
+  layer_set_update_proc(BTLayer, BTLine_update_callback);
 
   bluetooth_connection_service_subscribe(&handle_bluetooth);
 
