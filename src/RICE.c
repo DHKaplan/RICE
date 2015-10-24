@@ -19,6 +19,7 @@ Layer       *BTLayer;
 
 GFont        fontHelvNewLight20;
 GFont		     fontRobotoCondensed21;
+GFont        fontRobotoBoldSubset40;
 GFont        fontRobotoBoldSubset45;
 
 GPoint     Linepoint;
@@ -381,6 +382,7 @@ void handle_deinit(void) {
   bitmap_layer_destroy(image_layer);
 
   fonts_unload_custom_font(fontHelvNewLight20);
+  fonts_unload_custom_font(fontRobotoBoldSubset40);
   fonts_unload_custom_font(fontRobotoBoldSubset45);
 
   window_destroy(window);
@@ -399,6 +401,7 @@ void handle_init(void) {
   window_set_background_color(window, BGCOLOR);
 
   fontHelvNewLight20     = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_HELV_NEW_LIGHT_20));
+  fontRobotoBoldSubset40 = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_ROBOTO_BOLD_SUBSET_40));
   fontRobotoBoldSubset45 = fonts_load_custom_font(resource_get_handle(RESOURCE_ID_FONT_ROBOTO_BOLD_SUBSET_45));
   Layer *window_layer = window_get_root_layer(window);
 
@@ -412,7 +415,12 @@ void handle_init(void) {
   app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
 
 // Date
-  text_date_layer = text_layer_create(GRect(1, 94, 144, 28));
+  #ifdef PBL_PLATFORM_CHALK
+     text_date_layer = text_layer_create(GRect(1, 94, 180, 28));
+  #else
+     text_date_layer = text_layer_create(GRect(1, 94, 144, 28));
+  #endif
+    
   text_layer_set_text_color(text_date_layer, TEXTCOLOR);
   text_layer_set_background_color(text_date_layer, BGCOLOR);
   text_layer_set_text_alignment(text_date_layer, GTextAlignmentCenter);;
@@ -440,15 +448,26 @@ void handle_init(void) {
   } 
   
   // Time of Day
-  text_time_layer = text_layer_create(GRect(1, 120, 144, 45));
+  #ifdef PBL_PLATFORM_CHALK
+      text_time_layer = text_layer_create(GRect(1, 120, 180, 45));
+      text_layer_set_font(text_time_layer,fontRobotoBoldSubset40);
+  #else  
+      text_time_layer = text_layer_create(GRect(1, 120, 144, 45));
+      text_layer_set_font(text_time_layer,fontRobotoBoldSubset45);
+  #endif
+    
   text_layer_set_text_color(text_time_layer, TEXTCOLOR);
   text_layer_set_background_color(text_time_layer, BGCOLOR);
   text_layer_set_text_alignment(text_time_layer, GTextAlignmentCenter);
-  text_layer_set_font(text_time_layer,fontRobotoBoldSubset45);
   layer_add_child(window_layer, text_layer_get_layer(text_time_layer));
 
    // Dayname
-  text_dayname_layer = text_layer_create(GRect(1, 74, 144, 26));
+  #ifdef PBL_PLATFORM_CHALK  
+      text_dayname_layer = text_layer_create(GRect(1, 74, 180, 26));
+  #else  
+      text_dayname_layer = text_layer_create(GRect(1, 74, 144, 26));
+  #endif
+    
   text_layer_set_text_color(text_dayname_layer, TEXTCOLOR);
   text_layer_set_text_alignment(text_dayname_layer, GTextAlignmentCenter);
   text_layer_set_background_color(text_dayname_layer, BGCOLOR);
@@ -461,14 +480,24 @@ void handle_init(void) {
   #else
       image = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_RICE_LOGO_BW);
   #endif
-
-  image_layer = bitmap_layer_create(GRect(1, 29, 144, 49)); //49 was 45
+    
+  #ifdef PBL_PLATFORM_CHALK
+      image_layer = bitmap_layer_create(GRect(1, 29, 180, 49)); 
+  #else 
+      image_layer = bitmap_layer_create(GRect(1, 29, 144, 49)); 
+  #endif
+    
   bitmap_layer_set_bitmap(image_layer, image);
   bitmap_layer_set_alignment(image_layer, GAlignCenter);
   layer_add_child(window_layer, bitmap_layer_get_layer(image_layer));
 
    // Line
-  GRect line_frame = GRect(22, 122, 104, 6);
+  #ifdef PBL_PLATFORM_CHALK  
+      GRect line_frame = GRect(39, 119, 104, 6);
+  #else  
+      GRect line_frame = GRect(22, 122, 104, 6);
+  #endif 
+    
   line_layer = layer_create(line_frame);
   layer_set_update_proc(line_layer, line_layer_update_callback);
   layer_add_child(window_layer, line_layer);
@@ -476,7 +505,12 @@ void handle_init(void) {
   tick_timer_service_subscribe(SECOND_UNIT, handle_tick);
 
   //Bluetooth Logo Setup area
-  GRect BTArea = GRect(1, 5, 20, 20);
+  #ifdef PBL_PLATFORM_CHALK  
+      GRect BTArea = GRect(55, 5, 20, 20);
+  #else  
+      GRect BTArea = GRect(1, 5, 20, 20);
+  #endif
+    
   BTLayer = layer_create(BTArea);
 
   layer_add_child(window_layer, BTLayer);
@@ -487,7 +521,12 @@ void handle_init(void) {
 
 
   //Battery Text
-  text_battery_layer = text_layer_create(GRect(85,2,55,28));
+  #ifdef PBL_PLATFORM_CHALK  
+      text_battery_layer = text_layer_create(GRect(75,2,55,27));
+  #else  
+      text_battery_layer = text_layer_create(GRect(85,2,55,28));
+  #endif
+    
   text_layer_set_text_color(text_battery_layer, TEXTCOLOR);
   text_layer_set_background_color(text_battery_layer, BGCOLOR);
   text_layer_set_font(text_battery_layer,  fontHelvNewLight20 );
