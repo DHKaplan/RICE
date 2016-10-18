@@ -82,7 +82,7 @@ module.exports = [
             },
             {
                 "type": "text",
-                "defaultValue": "Rice Univ. Logo By WA1OUI V7.1"
+                "defaultValue": "Rice Univ. Logo By WA1OUI V7.2"
             }
         ]
     }

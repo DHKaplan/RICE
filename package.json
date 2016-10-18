@@ -20,9 +20,9 @@
         "resources": {
             "media": [
                 {
-                    "file": "images/menu_icon_RICE-BW.png",
-                    "menuIcon": true,
+                    "file": "images/Rice Menu Color.png",
                     "name": "IMAGE_MENU_ICON",
+                    "targetPlatforms": null,
                     "type": "bitmap"
                 },
                 {
@@ -66,5 +66,5 @@
             "watchface": true
         }
     },
-    "version": "7.1.0"
+    "version": "7.2.0"
 }
